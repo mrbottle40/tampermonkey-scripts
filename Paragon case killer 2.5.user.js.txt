@@ -1,0 +1,178 @@
+// ==UserScript==
+// @name         Paragon Case killer
+// @namespace    http://tampermonkey.net/
+// @version      2.5
+// @description  自动打开Add Phone Contact和Reply并添加文字，包含RPC、Resolve和Update case按钮
+// @author       yhanchen
+// @match        https://paragon-eu.amazon.com/hz/view-case?caseId=*
+// @match        https://paragon-na.amazon.com/hz/view-case?caseId=*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    // 创建 RPC 按钮
+    const rpcBtn = document.createElement('button');
+    rpcBtn.textContent = 'RPC';
+    rpcBtn.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: calc(50% - 120px);
+        z-index: 9999;
+        padding: 10px 15px;
+        background: #ff9900;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    `;
+
+    // 创建 Resolve 按钮
+    const resolveBtn = document.createElement('button');
+    resolveBtn.textContent = 'Resolve';
+    resolveBtn.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: calc(50% - 20px);
+        z-index: 9999;
+        padding: 10px 15px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    `;
+
+    // 创建 Update case 按钮
+    const updateBtn = document.createElement('button');
+    updateBtn.textContent = 'Update case';
+    updateBtn.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: calc(50% + 80px);
+        z-index: 9999;
+        padding: 10px 15px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    `;
+
+    // RPC 按钮点击事件
+    rpcBtn.onclick = function() {
+        // 更换 phone contact 文本
+        const phoneTextArea = document.querySelector('kat-textarea.kat-row textarea');
+        if (phoneTextArea) {
+            phoneTextArea.value = `尊敬的卖家，
+
+感谢您的沟通。
+如有进一步问题可以回复此问题日志或者联系企微：https://m.media-amazon.com/images/G/01/CN_Compliance_Team/yhanchen_WecomLink.jpg`;
+            phoneTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+            phoneTextArea.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log('更新了 phone contact 文本');
+        }
+
+        // 更换 reply 文本
+        const replyTextArea = document.querySelector('textarea');
+        if (replyTextArea && replyTextArea !== phoneTextArea) {
+            replyTextArea.value = `尊敬的卖家，
+
+感谢沟通。
+
+我是您的账户合规经理Arthur，如果您有合规问题可以添加企微与我及时沟通(添加时请备注您的卖家记号或问题日志编号)：https://m.media-amazon.com/images/G/01/CN_Compliance_Team/yhanchen_WecomLink.jpg`;
+            replyTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+            replyTextArea.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log('更新了 reply 文本');
+        }
+    };
+
+    // Resolve 按钮点击事件
+    resolveBtn.onclick = function() {
+        const resolveCaseBtn = document.querySelector('.actions-container > div:nth-child(1) > div:nth-child(4) > div:nth-child(1) > kat-button:nth-child(3)');
+        if (resolveCaseBtn) {
+            resolveCaseBtn.click();
+            console.log('点击了 resolve case 按钮');
+        } else {
+            console.log('未找到 resolve case 按钮');
+        }
+    };
+
+    // Update case 按钮点击事件
+    updateBtn.onclick = function() {
+        const updateCaseBtn = document.querySelector('.actions-container > div:nth-child(1) > div:nth-child(4) > div:nth-child(1) > kat-button:nth-child(1) > button:nth-child(1)');
+        if (updateCaseBtn) {
+            updateCaseBtn.click();
+            console.log('点击了 update case status 按钮');
+        } else {
+            console.log('未找到 update case status 按钮');
+        }
+    };
+
+    // 添加按钮到页面
+    document.body.appendChild(rpcBtn);
+    document.body.appendChild(resolveBtn);
+    document.body.appendChild(updateBtn);
+
+    // 页面加载后自动执行
+    setTimeout(() => {
+        // 点击 phone contact 按钮
+        const phoneContactBtn = document.querySelector('.actions-container > div:nth-child(1) > div:nth-child(1) > kat-button:nth-child(1)');
+        if (phoneContactBtn) {
+            phoneContactBtn.click();
+            console.log('自动点击了 phone contact 按钮');
+
+            // 等待 phone contact 文本框出现后添加文字
+            setTimeout(() => {
+                const phoneTextArea = document.querySelector('kat-textarea.kat-row textarea');
+                if (phoneTextArea) {
+                    phoneTextArea.value = `尊敬的卖家:
+
+我们今天通过网络电话 (VOIP) 系统尝试与您电话联系，但可惜未能联系到您。
+您可以通过以下链接添加我的企业微信进行沟通: https://m.media-amazon.com/images/G/01/CN_Compliance_Team/yhanchen_WecomLink.jpg
+
+若您希望预约一个通话时段，请在回复本信息时提供您的电话号码，并从下方选择一个合适的时段:
+星期一至星期五的工作日以及公休假期的补班日（均为北京时间）：
+• 上午 09:00 – 11:00
+• 上午 11:00 – 12:00
+• 下午 01:00 - 03:00
+• 下午 03:00 – 05:00
+
+为确保我们能够联系到您，请确保在您通知首选项设置中"紧急通知"下方列出的您的电话号码正确无误：
+https://sellercentral.amazon.com/notifications/preferences
+
+期待与您通话`;
+                    phoneTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+                    phoneTextArea.dispatchEvent(new Event('change', { bubbles: true }));
+                    console.log('在 phone contact 文本框添加了通话联系信息');
+                }
+            }, 1000);
+        }
+
+        // 点击 Reply 按钮
+        const replyBtn = document.querySelector('div.parent_WyMkx:nth-child(4) > div:nth-child(1) > section:nth-child(1) > header:nth-child(1) > div:nth-child(3) > div:nth-child(1) > div:nth-child(2) > kat-button:nth-child(1)');
+        if (replyBtn) {
+            replyBtn.click();
+            console.log('自动点击了 Reply 按钮');
+
+            // 等待 Reply 文本框出现后添加文字
+            setTimeout(() => {
+                const replyTextArea = document.querySelector('textarea');
+                if (replyTextArea) {
+                    replyTextArea.value = `卖家您好，
+
+我是您的账户合规经理Arthur，如果您有合规问题可以添加企微与我及时沟通(添加时请备注您的卖家记号或问题日志编号)：https://m.media-amazon.com/images/G/01/CN_Compliance_Team/yhanchen_WecomLink.jpg`;
+                    replyTextArea.dispatchEvent(new Event('input', { bubbles: true }));
+                    replyTextArea.dispatchEvent(new Event('change', { bubbles: true }));
+                    console.log('在 Reply 文本框添加了合规经理信息');
+                }
+            }, 1000);
+        }
+
+    }, 2000);
+
+})();
